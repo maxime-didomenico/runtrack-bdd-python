@@ -1,1 +1,0 @@
-SELECT COUNT(*) FROM etudiants WHERE age BETWEEN 1 AND 18;

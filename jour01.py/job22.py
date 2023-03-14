@@ -1,1 +1,0 @@
-SELECT * FROM etudiants ORDER BY age ASC LIMIT 1;
