@@ -15,32 +15,44 @@ class GestionStockGUI:
         self.master = master
         master.title("Gestion de stock")
         
+        # Create the frame for the categories section
         self.categories_frame = ttk.LabelFrame(master, text="Catégories")
-        self.categories_frame.grid(row=0, column=0, padx=10, pady=10, columnspan=2)
+        self.categories_frame.grid(row=0, column=0, padx=10, pady=10)
         
+        # Add category button and entry
         self.add_category_entry = ttk.Entry(self.categories_frame)
         self.add_category_entry.grid(row=0, column=0, padx=5, pady=5)
         self.add_category_button = ttk.Button(self.categories_frame, text="Ajouter", command=lambda: self.add_category(self.add_category_entry.get()))
         self.add_category_button.grid(row=0, column=1, padx=5, pady=5)
         
+        # Update category button and entry
         self.update_category_entry = ttk.Entry(self.categories_frame)
         self.update_category_entry.grid(row=1, column=0, padx=5, pady=5)
         self.update_category_button = ttk.Button(self.categories_frame, text="Mettre à jour", command=lambda: self.update_category(self.update_category_entry.get()))
         self.update_category_button.grid(row=1, column=1, padx=5, pady=5)
         
+        # Delete category button and entry
         self.delete_category_entry = ttk.Entry(self.categories_frame)
         self.delete_category_entry.grid(row=2, column=0, padx=5, pady=5)
         self.delete_category_button = ttk.Button(self.categories_frame, text="Supprimer", command=lambda: self.delete_category(self.delete_category_entry.get()))
         self.delete_category_button.grid(row=2, column=1, padx=5, pady=5)
         
-        self.categories_listbox = tk.Listbox(self.categories_frame)
-        self.categories_listbox.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
+        # Csv button
+        self.add_csv_button = ttk.Button(self.categories_frame, text="Ajouter CSV", command=lambda: self.export_csv())
+        self.add_csv_button.grid(row=3, column=1, padx=5, pady=5)
 
+        # Liste des catégories
+        self.categories_listbox = tk.Listbox(self.categories_frame)
+        self.categories_listbox.grid(row=3, column=0, columnspan=1, padx=5, pady=5)
+
+        # Remplir la liste des catégories
         self.categorie_fill()
         
+        # Create the frame for the products section
         self.products_frame = ttk.LabelFrame(master, text="Produits")
         self.products_frame.grid(row=1, column=0, padx=10, pady=10)
         
+        # Add product entry fields
         ttk.Label(self.products_frame, text="Nom").grid(row=0, column=0, padx=5, pady=5)
         ttk.Label(self.products_frame, text="Prix").grid(row=1, column=0, padx=5, pady=5)
         ttk.Label(self.products_frame, text="Quantité").grid(row=2, column=0, padx=5, pady=5)
@@ -58,19 +70,23 @@ class GestionStockGUI:
         self.product_description_entry = ttk.Entry(self.products_frame)
         self.product_description_entry.grid(row=4, column=1, padx=5, pady=5)
 
+        # Add product button
         self.add_product_button = ttk.Button(self.products_frame, text="Ajouter", command=self.add_product)
         self.add_product_button.grid(row=5, column=1, padx=5, pady=5)
         
+        # Update product button and combobox
         self.update_product_combobox = ttk.Combobox(self.products_frame, values=self.gestion_stock.get_produits_name(), state='readonly')
         self.update_product_combobox.grid(row=6, column=1, padx=5, pady=5)
         self.update_product_button = ttk.Button(self.products_frame, text="Mettre à jour", command=self.update_product)
         self.update_product_button.grid(row=7, column=1, padx=5, pady=5)
         
+        # Delete product button and combobox
         self.delete_product_combobox = ttk.Combobox(self.products_frame, values=self.gestion_stock.get_produits_name(), state='readonly')
         self.delete_product_combobox.grid(row=8, column=1, padx=5, pady=5)
         self.delete_product_button = ttk.Button(self.products_frame, text="Supprimer", command=self.delete_product)
         self.delete_product_button.grid(row=9, column=1, padx=5, pady=5)
         
+        # Products treeview
         self.products_treeview = ttk.Treeview(self.products_frame, columns=("id","name", "price", "quantity", "category"), show='headings')
         self.products_treeview.heading("id", text="ID")
         self.products_treeview.heading("name", text="Nom")
@@ -110,8 +126,9 @@ class GestionStockGUI:
         self.update_produits()
 
     def update_product(self):
-        id = self.gestion_stock.get_categorie_id(self.product_category_combobox.get())
-        self.gestion_stock.upd_produit(id, self.product_name_entry.get(), self.product_price_entry.get(), self.product_quantity_entry.get(), id, self.product_description_entry.get())
+        category = self.gestion_stock.get_categorie_id(self.product_category_combobox.get())
+        id = self.gestion_stock.get_categorie_id(self.update_product_combobox.get())
+        self.gestion_stock.upd_produit(id, self.product_name_entry.get(), self.product_price_entry.get(), self.product_quantity_entry.get(), category, self.product_description_entry.get())
         self.product_name_entry.delete(0, 'end')
         self.update_produits()
 
@@ -126,6 +143,12 @@ class GestionStockGUI:
         all_products = self.gestion_stock.get_produits()
         for produit in all_products:
             self.products_treeview.insert("", "end", values=produit)
+
+    def export_csv(self):
+        selected_category = self.categories_listbox.curselection()
+        if selected_category:
+            category_name = self.categories_listbox.get(selected_category[0])
+            self.gestion_stock.csv(category_name)
 
 
 
@@ -297,6 +320,7 @@ class GestionStock:
         self.cursor.close()
         self.log.close()
         print("Connexion à la base de données fermée.")
+
 
 root = tk.Tk()
 app = GestionStockGUI(root)
