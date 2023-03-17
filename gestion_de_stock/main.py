@@ -96,7 +96,7 @@ class GestionStockGUI:
         #self.products_treeview.heading("desc", text="Description")
         self.products_treeview.grid(row=2, column=2, rowspan=10, padx=10, pady=10)
 
-        self.update_produits()
+        self.update_produits_list()
     
     def categorie_fill(self):
         self.categories_listbox.delete(0, tk.END)
@@ -123,22 +123,29 @@ class GestionStockGUI:
         id = self.gestion_stock.get_categorie_id(self.product_category_combobox.get())
         self.gestion_stock.add_produit(self.product_name_entry.get(), self.product_price_entry.get(), self.product_quantity_entry.get(), id, self.product_description_entry.get())
         self.product_name_entry.delete(0, 'end')
-        self.update_produits()
+        self.update_produits_list()
 
     def update_product(self):
         category = self.gestion_stock.get_categorie_id(self.product_category_combobox.get())
         id = self.gestion_stock.get_categorie_id(self.update_product_combobox.get())
-        self.gestion_stock.upd_produit(id, self.product_name_entry.get(), self.product_price_entry.get(), self.product_quantity_entry.get(), category, self.product_description_entry.get())
+        name = self.product_name_entry.get()
+        if name[0] == '{':
+            name = name.strip('{}')
+
+        self.gestion_stock.upd_produit(id, name, self.product_price_entry.get(), self.product_quantity_entry.get(), category, self.product_description_entry.get())
         self.product_name_entry.delete(0, 'end')
-        self.update_produits()
+        self.update_produits_list()
 
     def delete_product(self):
-        id = self.gestion_stock.get_produit_id(self.delete_product_combobox.get())
+        name = self.delete_product_combobox.get()
+        if name[0] == '{':
+            name = name.strip('{}')
+        id = self.gestion_stock.get_produit_id(name)
         self.gestion_stock.del_produit(id)
         self.delete_product_combobox.delete(0, 'end')
-        self.update_produits()
+        self.update_produits_list()
 
-    def update_produits(self):
+    def update_produits_list(self):
         self.products_treeview.delete(*self.products_treeview.get_children())
         all_products = self.gestion_stock.get_produits()
         for produit in all_products:
@@ -320,7 +327,6 @@ class GestionStock:
         self.cursor.close()
         self.log.close()
         print("Connexion à la base de données fermée.")
-
 
 root = tk.Tk()
 app = GestionStockGUI(root)
